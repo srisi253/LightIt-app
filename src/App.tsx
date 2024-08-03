@@ -1,18 +1,16 @@
-import { Routes, Route, BrowserRouter } from "react-router-dom";
+import {BrowserRouter} from "react-router-dom";
 import "./App.scss";
-import { MedicalRecords } from "./pages/MedicalRecords/MedicalRecords";
-import { RecordDetail } from "./pages/RecordDetail/RecordDetail";
+import AppRoutes from "./AppRoutes";
+import { Provider } from "react-redux";
+import { store } from "./store/store";
 
 function App() {
   return (
+    <Provider store={store}>
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<MedicalRecords />}>
-          <Route path="records" element={<MedicalRecords />} />
-          <Route path="records/:id" element={<RecordDetail />} />
-        </Route>
-      </Routes>
+      <AppRoutes/>
     </BrowserRouter>
+    </Provider>
   );
 }
 

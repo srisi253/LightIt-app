@@ -1,33 +1,32 @@
-import { useEffect, useState } from "react";
-import { MedicalRecord } from "../../models/record";
+import { useEffect } from "react";
 import { fetchRecords } from "../../services/api";
 import { RecordCard } from "../../components/Card/RecordCard";
 import "./MedicalRecords.scss"; 
+import { useDispatch, useSelector } from "react-redux";
+import { setRecords as setStoreRecords } from "../../store/slices/recordSlice";
+import { MedicalRecord } from "../../models/record";
+
 
 export const MedicalRecords = () => {
-    const [records, setRecords] = useState<MedicalRecord[]>();
-    let loading:boolean = false;
+    const recordState = useSelector((state) => state.record.records);
+    const dispatch = useDispatch();
 
-    useEffect(() => {
-        if(!loading && !records){
-            loading = true;
-            fetchRecords("users").then((data) => {
-                setRecords(data);
-                loading = false;
-            }).catch((r)=> {
-                console.log(r)
-                // * TODO MOSTRAR ERROR EN PANTALLA
-                loading = false;
-            });
-        }
-      });
+      useEffect(() => {
+        const getRecordsApi = async () => {
+          const records = await fetchRecords("users");
+          dispatch(setStoreRecords(records));
+
+          // * TODO: catchear errores
+        };
+        getRecordsApi();
+      }, []);
 
     return(
         <>
         <h1>Medical records</h1>
         <div className="container">
-            {loading ? <h1>loading</h1>:
-            records?.map((r)=> (
+            {
+            recordState?.map((r: MedicalRecord)=> (
                 <RecordCard record={r} key={r?.id}/>
             ))
             }
