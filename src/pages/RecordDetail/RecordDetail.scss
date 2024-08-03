@@ -3,7 +3,7 @@
     max-width: 800px;
     margin: 0 auto;
 
-    .back-button {
+    .back-button, .edit-button {
       background-color: #007bff;
       border: none;
       color: white;
@@ -13,6 +13,7 @@
       cursor: pointer;
       transition: background-color 0.3s;
       margin-top: 25px;
+      margin-right: 10px;
 
       &:hover {
         background-color: #0056b3;
