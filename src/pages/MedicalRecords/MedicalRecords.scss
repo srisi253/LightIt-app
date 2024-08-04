@@ -1,3 +1,5 @@
+@import '../../styles/colors.scss';
+
 .container {
     display: flex;
     flex-wrap: wrap;
@@ -7,7 +9,7 @@
   }
 
 .create-button {
-  background-color: #28a745;
+  background-color: $primary;
   border: none;
   color: white;
   padding: 10px 20px;
@@ -17,7 +19,7 @@
   margin-bottom: 20px;
 
   &:hover {
-    background-color: #218838;
+    background-color: $primary-hover;
   }
 }
 
@@ -53,19 +55,34 @@ button {
 }
 
 button[type="submit"] {
-  background-color: #007bff;
+  background-color: $primary;
   color: white;
 
   &:hover {
-    background-color: #0056b3;
+    background-color: $primary-hover;
   }
 }
 
 button[type="button"] {
-  background-color: #dc3545;
+  background-color: $secondary;
   color: white;
 
   &:hover {
-    background-color: #c82333;
+    background-color: $secondary-hover;;
+  }
+}
+
+.spinner {
+  height: 5rem;
+  width: auto;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }

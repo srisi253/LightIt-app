@@ -1,62 +1,91 @@
-// MedicalRecords.tsx
 import { useEffect, useState } from "react";
-import { fetchRecords } from "../../services/api";
+import { fetchRecords, postRecord } from "../../services/api";
 import { RecordCard } from "../../components/Card/RecordCard";
-import "./MedicalRecords.scss"; 
+import "./MedicalRecords.scss";
 import { useDispatch, useSelector } from "react-redux";
-import { setRecords as setStoreRecords } from "../../store/slices/recordSlice";
+import { setRecords as setStoreRecords, addRecord } from "../../store/slices/recordSlice";
 import { MedicalRecord } from "../../models/record";
 import { RecordForm } from "../../components/RecordForm/RecordForm";
 import { Modal } from "../../components/Modal/Modal";
+import { Snackbar } from "../../components/SnackBar/SnackBar";
+import loadingSpinner from "../../assets/hospital.png"
+import { State } from "../../models/store";
 
 
 export const MedicalRecords = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedRecord, setSelectedRecord] = useState<MedicalRecord | null>(null);
-  const recordState = useSelector((state: any) => state.record.records); // Asegúrate de tipar correctamente
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const recordState = useSelector((state: State) => state.record.records);
   const dispatch = useDispatch();
+  const [snackbarMessage, setSnackbarMessage] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(true);
+
 
   useEffect(() => {
-    const getRecordsApi = async () => {
-      const records = await fetchRecords("users");
-      dispatch(setStoreRecords(records));
+    const getRecordsApi =  () => {
+      fetchRecords("users").then(response => {
+        dispatch(setStoreRecords(response));
+        setLoading(false);
+      }).catch(err => {
+        setSnackbarMessage(err.message)
+        setLoading(false);
+      });
     };
-    getRecordsApi();
-  }, [dispatch]);
+      getRecordsApi();
+  },[]);
 
-  const handleCreate = () => {
-    setSelectedRecord(null);
+  const createRecord = () => {
     setIsModalOpen(true);
   };
 
-  const handleSave = (updatedRecord: MedicalRecord) => {
-    // Lógica para guardar el registro
-    console.log('Record saved:', updatedRecord);
+  const saveRecord = (newRecord: MedicalRecord) => {
+    setIsModalOpen(false);
+    postRecord("users", newRecord).then(response => {
+      dispatch(addRecord(response));
+      setSnackbarMessage('Success: Record has been successfully created.')
+    }).catch(err => {
+      setSnackbarMessage(err.message)
+    });
+
+  };
+
+  const closeModal = () => {
     setIsModalOpen(false);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
+  const closeSnackbar = () => {
+    setSnackbarMessage('')
+  }
 
   return (
     <>
-      <h1>Medical Records</h1>
-      <button className="create-button" onClick={handleCreate}>
-        + Crear registro médico
-      </button>
-      <div className="container">
-        {recordState?.map((r: MedicalRecord) => (
-          <RecordCard
-            record={r}
-            key={r.id}
-            // onEdit={() => handleEdit(r)} // Añade una prop onEdit si necesitas una funcionalidad de edición en el componente RecordCard
-          />
-        ))}
+      {loading ?
+      <div>
+        <img className="spinner" src={loadingSpinner} alt="Spinner"/>
+        <p><b>Loading...</b></p>
       </div>
-      <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
-            <RecordForm  record={selectedRecord || undefined} onSave={handleSave} onClose={handleCloseModal}/>
+
+      :
+        <>
+              <h1>Medical Records</h1>
+              <button className="create-button" onClick={createRecord}>
+                + Create medical record
+              </button>
+              <div className="container">
+                {recordState?.map((r: MedicalRecord) => (
+                  <RecordCard
+                    key={r.id}
+                    record={r}
+                  />
+                ))}
+              </div>
+        </>
+      }
+
+      <Modal isOpen={isModalOpen} onClose={closeModal}>
+            <RecordForm onSave={saveRecord} onClose={closeModal}/>
       </Modal>
+
+      {snackbarMessage && <Snackbar message={snackbarMessage} onClose={closeSnackbar} />}
     </>
   );
 };

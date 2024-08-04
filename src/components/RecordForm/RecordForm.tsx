@@ -25,7 +25,7 @@ export const RecordForm: React.FC<RecordFormProps> = ({ record, onSave, onClose 
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2>{record ? 'Editar registro médico' : 'Crear registro médico'}</h2>
+      <h2>{record ? 'Edit medical record' : 'Create medical record'}</h2>
       <label>
         Name:
         <input

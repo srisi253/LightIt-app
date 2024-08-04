@@ -1,18 +1,20 @@
 import { useEffect, useState } from "react";
-import { fetchRecords } from "../../services/api";
+import { fetchRecords, editRecord as editRecordApi } from "../../services/api";
 import { useDispatch, useSelector } from "react-redux";
-import { setRecords as setStoreRecords } from "../../store/slices/recordSlice";
+import { setRecords as setStoreRecords, editRecord } from "../../store/slices/recordSlice";
 import { MedicalRecord } from "../../models/record";
 import { useParams, useNavigate } from "react-router-dom";
-import "./RecordDetail.scss"; // Importa los estilos
+import "./RecordDetail.scss";
 import { Modal } from "../../components/Modal/Modal";
 import { RecordForm } from "../../components/RecordForm/RecordForm";
+import { Snackbar } from "../../components/SnackBar/SnackBar";
+import { State } from "../../models/store";
 
 export const RecordDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const recordStateById = useSelector((state: any) =>
+  const recordStateById = useSelector((state: State) =>
     state.record.records.find((r: MedicalRecord) => r.id === id)
   );
   const dispatch = useDispatch();
@@ -20,6 +22,8 @@ export const RecordDetail = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<MedicalRecord | null>(null);
+  const [snackbarMessage, setSnackbarMessage] = useState<string>('');
+
 
   useEffect(() => {
     const getRecordsApi = async () => {
@@ -33,20 +37,28 @@ export const RecordDetail = () => {
     }
   }, [dispatch, recordStateById]);
 
-  const handleEdit = (record: MedicalRecord) => {
+  const recordEdit = (record: MedicalRecord) => {
     setSelectedRecord(record);
     setIsModalOpen(true);
   };
 
-  const handleSave = (updatedRecord: MedicalRecord) => {
-    // Lógica para guardar el registro actualizado
-    console.log('Record saved:', updatedRecord);
+  const saveEditRecord = (updatedRecord: MedicalRecord) => {
     setIsModalOpen(false);
+    editRecordApi("users", updatedRecord).then(response =>{
+      dispatch(editRecord(response));
+      setSnackbarMessage('Success: Record has been successfully edited.')
+
+    }).catch(err => setSnackbarMessage(err.message));
+
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
+
+  const closeSnackbar = () => {
+    setSnackbarMessage('');
+  }
 
   return (
     <div className="record-detail">
@@ -65,22 +77,24 @@ export const RecordDetail = () => {
         className="back-button"
         onClick={() => navigate('/records')}
       >
-        &larr; Volver
+        &larr; Back
       </button>
       <button
         className="edit-button"
-        onClick={() => handleEdit(recordStateById)}
+        onClick={() => recordStateById && recordEdit(recordStateById)}
       >
-        Editar
+        Edit
       </button>
 
       <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
         <RecordForm
           record={selectedRecord || undefined}
-          onSave={handleSave}
+          onSave={saveEditRecord}
           onClose={handleCloseModal}
         />
       </Modal>
+
+      {snackbarMessage && <Snackbar message={snackbarMessage} onClose={closeSnackbar} />}
     </div>
   );
 };
