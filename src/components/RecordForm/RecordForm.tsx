@@ -19,7 +19,7 @@ export const RecordForm: React.FC<RecordFormProps> = ({ record, onSave, onClose 
       name,
       description,
       website
-    };
+    } as MedicalRecord;
     onSave(updatedRecord);
   };
 
